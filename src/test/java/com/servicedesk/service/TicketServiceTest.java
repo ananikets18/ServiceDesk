@@ -5,6 +5,7 @@ import com.servicedesk.dto.CommentRequest;
 import com.servicedesk.dto.StatusUpdateRequest;
 import com.servicedesk.dto.TicketRequest;
 import com.servicedesk.dto.TicketResponse;
+import com.servicedesk.dto.TicketUpdateRequest;
 import com.servicedesk.entity.Comment;
 import com.servicedesk.entity.Priority;
 import com.servicedesk.entity.Role;
@@ -227,6 +228,7 @@ class TicketServiceTest {
     @Test
     @DisplayName("updateStatus allows an admin on any ticket")
     void updateStatusAllowsAdmin() {
+        ticket.setStatus(Status.IN_PROGRESS);
         ticket.setAssignee(otherAgent);
         when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
         when(ticketRepository.save(ticket)).thenReturn(ticket);
@@ -237,6 +239,113 @@ class TicketServiceTest {
         TicketResponse response = ticketService.updateStatus(10L, request, principal(admin));
 
         assertThat(response.getStatus()).isEqualTo(Status.RESOLVED);
+    }
+
+    @Test
+    @DisplayName("updateStatus rejects a jump that skips a step")
+    void updateStatusRejectsSkippingSteps() {
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+
+        StatusUpdateRequest request = new StatusUpdateRequest();
+        request.setStatus(Status.CLOSED);
+
+        assertThatThrownBy(() -> ticketService.updateStatus(10L, request, principal(admin)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot move a ticket from OPEN to CLOSED");
+        verify(ticketRepository, never()).save(any(Ticket.class));
+    }
+
+    @Test
+    @DisplayName("updateStatus lets a ticket be reopened one step back")
+    void updateStatusAllowsReopeningOneStep() {
+        ticket.setStatus(Status.RESOLVED);
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+
+        StatusUpdateRequest request = new StatusUpdateRequest();
+        request.setStatus(Status.IN_PROGRESS);
+
+        TicketResponse response = ticketService.updateStatus(10L, request, principal(admin));
+
+        assertThat(response.getStatus()).isEqualTo(Status.IN_PROGRESS);
+    }
+
+    @Test
+    @DisplayName("updateStatus treats CLOSED as final")
+    void updateStatusTreatsClosedAsFinal() {
+        ticket.setStatus(Status.CLOSED);
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+
+        StatusUpdateRequest request = new StatusUpdateRequest();
+        request.setStatus(Status.OPEN);
+
+        assertThatThrownBy(() -> ticketService.updateStatus(10L, request, principal(admin)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot move a ticket from CLOSED");
+        verify(ticketRepository, never()).save(any(Ticket.class));
+    }
+
+    // ---------------------------------------------------------------- edit
+
+    @Test
+    @DisplayName("updateTicket lets the requester edit their own ticket")
+    void updateTicketLetsOwnerEdit() {
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+
+        TicketUpdateRequest request = new TicketUpdateRequest();
+        request.setTitle("Laptop will not boot at all");
+        request.setDescription("Blue screen, tried safe mode as well");
+
+        TicketResponse response = ticketService.updateTicket(10L, request, principal(requester));
+
+        assertThat(response.getTitle()).isEqualTo("Laptop will not boot at all");
+        assertThat(response.getDescription()).isEqualTo("Blue screen, tried safe mode as well");
+    }
+
+    @Test
+    @DisplayName("updateTicket lets an admin edit any ticket")
+    void updateTicketLetsAdminEdit() {
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+
+        TicketUpdateRequest request = new TicketUpdateRequest();
+        request.setTitle("Edited by admin");
+        request.setDescription("Tidied up the wording");
+
+        TicketResponse response = ticketService.updateTicket(10L, request, principal(admin));
+
+        assertThat(response.getTitle()).isEqualTo("Edited by admin");
+    }
+
+    @Test
+    @DisplayName("updateTicket blocks an agent")
+    void updateTicketBlocksAgent() {
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+
+        TicketUpdateRequest request = new TicketUpdateRequest();
+        request.setTitle("Agent trying to edit");
+        request.setDescription("Agents should not rewrite the report");
+
+        assertThatThrownBy(() -> ticketService.updateTicket(10L, request, principal(agent)))
+                .isInstanceOf(ForbiddenException.class);
+        verify(ticketRepository, never()).save(any(Ticket.class));
+    }
+
+    @Test
+    @DisplayName("updateTicket blocks editing a closed ticket")
+    void updateTicketBlocksClosedTicket() {
+        ticket.setStatus(Status.CLOSED);
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
+
+        TicketUpdateRequest request = new TicketUpdateRequest();
+        request.setTitle("Too late");
+        request.setDescription("This ticket is done and dusted");
+
+        assertThatThrownBy(() -> ticketService.updateTicket(10L, request, principal(requester)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Closed tickets");
+        verify(ticketRepository, never()).save(any(Ticket.class));
     }
 
     // ---------------------------------------------------------------- assign

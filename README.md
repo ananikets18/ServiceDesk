@@ -92,20 +92,25 @@ Protected endpoints expect `Authorization: Bearer <token>`.
 | GET | `/api/v1/health` | public | Health check |
 | POST | `/api/v1/auth/register` | public | Register a user |
 | POST | `/api/v1/auth/login` | public | Log in and receive a JWT |
-| POST | `/api/v1/tickets` | any role | Create a ticket |
+| POST | `/api/v1/tickets` | requester | Create a ticket |
 | GET | `/api/v1/tickets` | any role | List tickets (requesters see only their own) |
 | GET | `/api/v1/tickets/{id}` | any role | Get one ticket |
-| PATCH | `/api/v1/tickets/{id}/status` | agent, admin | Change status |
+| PATCH | `/api/v1/tickets/{id}` | requester (own), admin | Edit the title and description |
+| PATCH | `/api/v1/tickets/{id}/status` | agent, admin | Change status (one step at a time) |
 | PATCH | `/api/v1/tickets/{id}/assign` | agent, admin | Assign a ticket |
 | POST | `/api/v1/tickets/{id}/comments` | any role | Add a comment |
 | GET | `/api/v1/tickets/{id}/comments` | any role | List comments |
 | GET | `/api/v1/users/agents` | agent, admin | List agents (for the assign dropdown) |
 
+### Status workflow
+
+A ticket moves through `OPEN -> IN_PROGRESS -> RESOLVED -> CLOSED`, one step at a time. It can also be sent back one step if more work is needed (`IN_PROGRESS -> OPEN`, `RESOLVED -> IN_PROGRESS`). `CLOSED` is final. Any other jump is rejected with a `400` that lists the allowed next statuses.
+
 ### Permissions
 
-- **Requester** - the only role that can raise tickets. Sees only their own, can comment on them, cannot change status or assign.
-- **Agent** - works tickets but cannot raise them. Sees all tickets, can update tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
-- **Admin** - oversees everything: can update and assign any ticket, but does not raise tickets either.
+- **Requester** - the only role that can raise tickets. Sees only their own, can edit and comment on them while they are open, but cannot change status or assign.
+- **Agent** - works tickets but cannot raise or edit them. Sees all tickets, can move the status of tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
+- **Admin** - oversees everything: can edit, update and assign any ticket, but does not raise tickets either.
 
 ### Example
 
@@ -183,7 +188,7 @@ Import [docs/ServiceDesk.postman_collection.json](docs/ServiceDesk.postman_colle
 .\mvnw.cmd test
 ```
 
-The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 45 tests:
+The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 55 tests:
 
 - `TicketServiceTest` - ticket rules and permissions (mocked repositories).
 - `AuthServiceTest` - registration and login logic.

@@ -6,8 +6,10 @@ import com.servicedesk.dto.CommentResponse;
 import com.servicedesk.dto.StatusUpdateRequest;
 import com.servicedesk.dto.TicketRequest;
 import com.servicedesk.dto.TicketResponse;
+import com.servicedesk.dto.TicketUpdateRequest;
 import com.servicedesk.entity.Comment;
 import com.servicedesk.entity.Role;
+import com.servicedesk.entity.Status;
 import com.servicedesk.entity.Ticket;
 import com.servicedesk.entity.User;
 import com.servicedesk.exception.ForbiddenException;
@@ -85,7 +87,35 @@ public class TicketService {
             throw new ForbiddenException("Agents can only update tickets assigned to them");
         }
 
+        if (!ticket.getStatus().canTransitionTo(request.getStatus())) {
+            throw new IllegalArgumentException(
+                    "Cannot move a ticket from " + ticket.getStatus() + " to " + request.getStatus()
+                            + ". Allowed next statuses: " + ticket.getStatus().allowedNextStatuses());
+        }
+
         ticket.setStatus(request.getStatus());
+        return toResponse(ticketRepository.save(ticket));
+    }
+
+    /**
+     * Lets the requester who raised the ticket, or an admin, edit the title and
+     * description. Agents work the ticket but do not rewrite the report.
+     */
+    @Transactional
+    public TicketResponse updateTicket(Long id, TicketUpdateRequest request, UserPrincipal currentUser) {
+        Ticket ticket = findAccessibleTicket(id, currentUser);
+
+        boolean isOwner = ticket.getRequester().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        if (!isOwner && !isAdmin) {
+            throw new ForbiddenException("Only the requester who raised this ticket, or an admin, can edit it");
+        }
+        if (ticket.getStatus() == Status.CLOSED) {
+            throw new IllegalArgumentException("Closed tickets can no longer be edited");
+        }
+
+        ticket.setTitle(request.getTitle());
+        ticket.setDescription(request.getDescription());
         return toResponse(ticketRepository.save(ticket));
     }
 

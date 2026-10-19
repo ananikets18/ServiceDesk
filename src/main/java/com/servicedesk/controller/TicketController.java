@@ -6,6 +6,7 @@ import com.servicedesk.dto.CommentResponse;
 import com.servicedesk.dto.StatusUpdateRequest;
 import com.servicedesk.dto.TicketRequest;
 import com.servicedesk.dto.TicketResponse;
+import com.servicedesk.dto.TicketUpdateRequest;
 import com.servicedesk.security.UserPrincipal;
 import com.servicedesk.service.TicketService;
 import jakarta.validation.Valid;
@@ -60,6 +61,13 @@ public class TicketController {
                                        @Valid @RequestBody StatusUpdateRequest request,
                                        @AuthenticationPrincipal UserPrincipal currentUser) {
         return ticketService.updateStatus(id, request, currentUser);
+    }
+
+    @PatchMapping("/{id}")
+    public TicketResponse updateTicket(@PathVariable Long id,
+                                       @Valid @RequestBody TicketUpdateRequest request,
+                                       @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ticketService.updateTicket(id, request, currentUser);
     }
 
     @PatchMapping("/{id}/assign")

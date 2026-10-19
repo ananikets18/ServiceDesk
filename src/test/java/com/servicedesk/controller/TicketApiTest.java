@@ -271,6 +271,45 @@ class TicketApiTest {
     }
 
     @Test
+    @DisplayName("a status jump that skips a step returns 400")
+    void statusJumpIsRejected() throws Exception {
+        Long ticketId = createTicket(requesterToken, "Needs careful handling");
+
+        mockMvc.perform(patch("/api/v1/tickets/" + ticketId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"CLOSED\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Cannot move a ticket")));
+    }
+
+    @Test
+    @DisplayName("a requester can edit the title and description of their own ticket")
+    void requesterCanEditOwnTicket() throws Exception {
+        Long ticketId = createTicket(requesterToken, "Printer offline");
+
+        mockMvc.perform(patch("/api/v1/tickets/" + ticketId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Printer still offline\",\"description\":\"Tried a new cable\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Printer still offline"))
+                .andExpect(jsonPath("$.description").value("Tried a new cable"));
+    }
+
+    @Test
+    @DisplayName("an agent cannot edit a ticket")
+    void agentCannotEditTicket() throws Exception {
+        Long ticketId = createTicket(requesterToken, "Leave this alone");
+
+        mockMvc.perform(patch("/api/v1/tickets/" + ticketId)
+                        .header("Authorization", "Bearer " + agentToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Agent edit\",\"description\":\"Should be blocked\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("a requester can add a comment to their own ticket")
     void requesterCanComment() throws Exception {
         Long ticketId = createTicket(requesterToken, "Printer offline");
