@@ -118,12 +118,20 @@ Every error uses the same shape:
 .\mvnw.cmd test
 ```
 
+The tests use an in-memory H2 database (see `src/test/resources/application-test.properties`), so you do not need PostgreSQL running to run them. They cover:
+
+- **Unit tests** (`TicketServiceTest`, `AuthServiceTest`) - business rules and permission checks with mocked repositories.
+- **API tests** (`TicketApiTest`) - the real HTTP layer, security filters and database via MockMvc.
+- **Negative cases** - validation errors, 401s, 403s, 404s and duplicate registrations.
+
+Current total: 39 tests.
+
 ## Roadmap
 
 - [x] Phase 1 - Foundation: project setup and PostgreSQL connection
 - [x] Phase 2 - Core APIs: tickets, comments and validation
 - [x] Phase 3 - Security: authentication, roles and permissions
-- [ ] Phase 4 - Testing
+- [x] Phase 4 - Testing
 - [ ] Phase 5 - Documentation, Postman collection and deployment
 
 ## Author
