@@ -1,9 +1,11 @@
 import axios from "axios";
 
 // Talks to the Spring Boot API. During development Vite proxies /api to
-// http://localhost:8080, so no full URL is needed here.
+// http://localhost:8080, so the relative path is enough. In a deployed build
+// we set VITE_API_URL (for example https://my-api.onrender.com/api/v1) so the
+// app knows where the backend lives.
 const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL: import.meta.env.VITE_API_URL || "/api/v1",
 });
 
 // Attach the JWT (if we have one) to every request.
