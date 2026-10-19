@@ -111,6 +111,26 @@ class TicketServiceTest {
         verify(ticketRepository).save(any(Ticket.class));
     }
 
+    @Test
+    @DisplayName("createTicket blocks an agent from raising tickets")
+    void createTicketBlocksAgent() {
+        assertThatThrownBy(() -> ticketService.createTicket(ticketRequest(), principal(agent)))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("Only requesters");
+
+        verify(ticketRepository, never()).save(any(Ticket.class));
+    }
+
+    @Test
+    @DisplayName("createTicket blocks an admin from raising tickets")
+    void createTicketBlocksAdmin() {
+        assertThatThrownBy(() -> ticketService.createTicket(ticketRequest(), principal(admin)))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("Only requesters");
+
+        verify(ticketRepository, never()).save(any(Ticket.class));
+    }
+
     // ------------------------------------------------------------------ list
 
     @Test

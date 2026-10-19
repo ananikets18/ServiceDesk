@@ -41,9 +41,11 @@ export default function Layout() {
           <NavLink to="/" end className={linkClass}>
             Tickets
           </NavLink>
-          <NavLink to="/tickets/new" className={linkClass}>
-            New Ticket
-          </NavLink>
+          {user.role === "REQUESTER" && (
+            <NavLink to="/tickets/new" className={linkClass}>
+              New Ticket
+            </NavLink>
+          )}
         </nav>
       </header>
 

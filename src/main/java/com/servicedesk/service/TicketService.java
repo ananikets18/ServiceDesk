@@ -47,6 +47,10 @@ public class TicketService {
 
     @Transactional
     public TicketResponse createTicket(TicketRequest request, UserPrincipal currentUser) {
+        if (currentUser.getRole() != Role.REQUESTER) {
+            throw new ForbiddenException("Only requesters can raise tickets");
+        }
+
         User requester = userService.getById(currentUser.getId());
         Ticket ticket = new Ticket(request.getTitle(), request.getDescription(), request.getPriority(), requester);
         Ticket saved = ticketRepository.save(ticket);

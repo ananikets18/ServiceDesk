@@ -103,9 +103,9 @@ Protected endpoints expect `Authorization: Bearer <token>`.
 
 ### Permissions
 
-- **Requester** - creates tickets, sees only their own, can comment on them, cannot change status or assign.
-- **Agent** - sees all tickets, can update tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
-- **Admin** - full access, including assigning any ticket to any agent.
+- **Requester** - the only role that can raise tickets. Sees only their own, can comment on them, cannot change status or assign.
+- **Agent** - works tickets but cannot raise them. Sees all tickets, can update tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
+- **Admin** - oversees everything: can update and assign any ticket, but does not raise tickets either.
 
 ### Example
 
@@ -183,7 +183,7 @@ Import [docs/ServiceDesk.postman_collection.json](docs/ServiceDesk.postman_colle
 .\mvnw.cmd test
 ```
 
-The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 39 tests:
+The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 45 tests:
 
 - `TicketServiceTest` - ticket rules and permissions (mocked repositories).
 - `AuthServiceTest` - registration and login logic.

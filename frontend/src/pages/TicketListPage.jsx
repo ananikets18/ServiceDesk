@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
 import { PriorityBadge, StatusBadge, formatDate } from "../components/Badges";
+import { useAuth } from "../AuthContext";
 
 export default function TicketListPage() {
+  const { user } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,12 +36,14 @@ export default function TicketListPage() {
             {tickets.length} ticket{tickets.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
-          to="/tickets/new"
-          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          New ticket
-        </Link>
+        {user.role === "REQUESTER" && (
+          <Link
+            to="/tickets/new"
+            className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            New ticket
+          </Link>
+        )}
       </div>
 
       {error && (
@@ -53,10 +57,14 @@ export default function TicketListPage() {
           <p className="p-6 text-sm text-slate-500">Loading tickets...</p>
         ) : tickets.length === 0 ? (
           <div className="p-10 text-center">
-            <p className="text-sm text-slate-600">No tickets yet.</p>
-            <Link to="/tickets/new" className="mt-2 inline-block text-sm font-medium text-slate-900 underline">
-              Create the first one
-            </Link>
+            <p className="text-sm text-slate-600">
+              {user.role === "REQUESTER" ? "No tickets yet." : "No tickets to show."}
+            </p>
+            {user.role === "REQUESTER" && (
+              <Link to="/tickets/new" className="mt-2 inline-block text-sm font-medium text-slate-900 underline">
+                Create the first one
+              </Link>
+            )}
           </div>
         ) : (
           <table className="w-full text-left text-sm">

@@ -15,6 +15,14 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function RequireRequester({ children }) {
+  const { user } = useAuth();
+  if (user?.role !== "REQUESTER") {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -30,7 +38,14 @@ export default function App() {
         }
       >
         <Route index element={<TicketListPage />} />
-        <Route path="tickets/new" element={<NewTicketPage />} />
+        <Route
+          path="tickets/new"
+          element={
+            <RequireRequester>
+              <NewTicketPage />
+            </RequireRequester>
+          }
+        />
         <Route path="tickets/:id" element={<TicketDetailPage />} />
       </Route>
 

@@ -204,6 +204,53 @@ class TicketApiTest {
     }
 
     @Test
+    @DisplayName("an agent cannot raise a ticket")
+    void agentCannotRaiseTicket() throws Exception {
+        TicketRequest request = new TicketRequest();
+        request.setTitle("Agent raising a ticket");
+        request.setDescription("Agents should not do this");
+        request.setPriority(Priority.LOW);
+
+        mockMvc.perform(post("/api/v1/tickets")
+                        .header("Authorization", "Bearer " + agentToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("an admin cannot raise a ticket")
+    void adminCannotRaiseTicket() throws Exception {
+        TicketRequest request = new TicketRequest();
+        request.setTitle("Admin raising a ticket");
+        request.setDescription("Admins should not do this either");
+        request.setPriority(Priority.LOW);
+
+        mockMvc.perform(post("/api/v1/tickets")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("an agent can list the agents")
+    void agentCanListAgents() throws Exception {
+        mockMvc.perform(get("/api/v1/users/agents")
+                        .header("Authorization", "Bearer " + agentToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].role").value("AGENT"));
+    }
+
+    @Test
+    @DisplayName("a requester cannot list the agents")
+    void requesterCannotListAgents() throws Exception {
+        mockMvc.perform(get("/api/v1/users/agents")
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("an agent can assign a ticket to themselves and update its status")
     void agentCanAssignAndUpdateStatus() throws Exception {
         Long ticketId = createTicket(requesterToken, "VPN not connecting");
