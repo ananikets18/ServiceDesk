@@ -34,6 +34,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage(), request);
     }
 
+    /**
+     * Thrown by @PreAuthorize when the logged-in user lacks the required role.
+     * Without this it would fall through to the generic handler and become a 500.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "Forbidden", "You are not allowed to perform this action", request);
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
         return build(HttpStatus.UNAUTHORIZED, "Unauthorized", "Invalid email or password", request);

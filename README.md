@@ -25,6 +25,7 @@ An IT service request and issue tracking system built with Spring Boot. Employee
 | Build | Maven (wrapper included) |
 | Testing | JUnit 5, Mockito, MockMvc, H2 |
 | Docs | springdoc OpenAPI (Swagger UI) |
+| Frontend | React 19 + Vite + Tailwind CSS |
 
 ## Project layout
 
@@ -98,6 +99,7 @@ Protected endpoints expect `Authorization: Bearer <token>`.
 | PATCH | `/api/v1/tickets/{id}/assign` | agent, admin | Assign a ticket |
 | POST | `/api/v1/tickets/{id}/comments` | any role | Add a comment |
 | GET | `/api/v1/tickets/{id}/comments` | any role | List comments |
+| GET | `/api/v1/users/agents` | agent, admin | List agents (for the assign dropdown) |
 
 ### Permissions
 
@@ -135,6 +137,37 @@ Authorization: Bearer <token>
   "fieldErrors": { "title": "title must not be blank" }
 }
 ```
+
+## Frontend
+
+The React app lives in `frontend/`. It covers login, registration, the ticket list, a new-ticket form and a ticket detail page where agents and admins can change the status, assign an agent and everyone can comment.
+
+### Running the frontend
+
+Start the backend first, then:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173. The Vite dev server proxies `/api` to `http://localhost:8080`, so there is no CORS setup to worry about.
+
+Log in with one of the demo accounts from the section above. What you see depends on the role:
+
+- Requesters see only their own tickets and cannot change status or assign.
+- Agents see every ticket and can manage the ones assigned to them.
+- Admins can manage anything.
+
+### Building for production
+
+```powershell
+cd frontend
+npm run build
+```
+
+The output goes to `frontend/dist`.
 
 ## Swagger UI
 
