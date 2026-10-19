@@ -1,0 +1,12 @@
+# Keep the backend image build context small.
+target/
+frontend/
+.git/
+.github/
+docs/
+.idea/
+.vscode/
+*.md
+*.log
+.env
+.env.*

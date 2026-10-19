@@ -1,0 +1,45 @@
+# Runs the backend and a PostgreSQL database together.
+#
+#   docker compose up --build
+#
+# The API is then on http://localhost:8080 and the Vite dev server (run
+# separately with "npm run dev" in frontend/) proxies to it as usual.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: servicedesk_db
+      POSTGRES_USER: postgres
+      # Override with a real password by setting DB_PASSWORD in your shell
+      # or in a .env file next to this compose file.
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d servicedesk_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      # Change this before showing the app to anyone. It must be at least
+      # 32 characters because the tokens are signed with HS256.
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-please-change-me-1234567890}
+      # Point the app at the database container instead of localhost.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/servicedesk_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      # The React app runs on the Vite dev server during development.
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:5173
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

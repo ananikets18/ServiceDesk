@@ -72,6 +72,19 @@ To make them permanent, use `setx` and reopen the terminal.
 
 The API starts on http://localhost:8080. Tables and three demo users are created automatically on first start.
 
+### Or run it with Docker
+
+If you have Docker installed you can skip the manual database setup - a
+PostgreSQL container is started for you:
+
+```powershell
+$env:JWT_SECRET="a-long-random-string-at-least-32-chars"
+docker compose up --build
+```
+
+The API is then on http://localhost:8080, backed by a PostgreSQL container. Run
+the frontend separately as shown under [Frontend](#frontend).
+
 ### Demo accounts
 
 All three use the password `password123`.
@@ -176,7 +189,27 @@ cd frontend
 npm run build
 ```
 
-The output goes to `frontend/dist`.
+The output goes to `frontend/dist`. To point the built app at a deployed API, set `VITE_API_URL` before building (for example `https://your-api.onrender.com/api/v1`); without it the app uses the relative `/api/v1` path.
+
+## Docker
+
+The repo includes a `Dockerfile` for the backend and a `docker-compose.yml`
+that also starts PostgreSQL:
+
+```powershell
+$env:JWT_SECRET="a-long-random-string-at-least-32-chars"
+docker compose up --build
+```
+
+Change `DB_PASSWORD` and `JWT_SECRET` in the environment (or a `.env` file) for
+anything other than a throwaway local run.
+
+## Deployment
+
+A step-by-step guide to hosting the demo for free on Neon (database), Render
+(backend) and Vercel (frontend) is in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+The `CI` workflow in `.github/workflows/ci.yml` runs the tests and the frontend
+build on every push and pull request.
 
 ## Swagger UI
 
@@ -196,7 +229,9 @@ The tests use an in-memory H2 database, so PostgreSQL does not need to be runnin
 
 - `TicketServiceTest` - ticket rules and permissions (mocked repositories).
 - `AuthServiceTest` - registration and login logic.
+- `UserServiceTest` - admin user management rules.
 - `TicketApiTest` - full HTTP tests through the security filters and database, including negative cases.
+- `UserApiTest` - admin user endpoints and deactivation behaviour.
 - `ServiceDeskApplicationTests` - context load check.
 
 ## Roadmap
@@ -206,6 +241,7 @@ The tests use an in-memory H2 database, so PostgreSQL does not need to be runnin
 - [x] Phase 3 - Security: authentication, roles and permissions
 - [x] Phase 4 - Testing
 - [x] Phase 5 - Documentation, Postman collection and Swagger
+- [x] Docker and CI (GitHub Actions) with a free deployment guide
 
 ## Author
 
