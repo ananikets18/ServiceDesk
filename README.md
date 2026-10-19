@@ -42,14 +42,33 @@ An IT service request and issue tracking system. Employees raise support tickets
 
    It runs on http://localhost:8080.
 
-## Current endpoints
+## Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/` | Quick check that the API is up |
 | GET | `/api/v1/health` | Health check |
+| POST | `/api/v1/tickets` | Create a ticket |
+| GET | `/api/v1/tickets` | List all tickets |
+| GET | `/api/v1/tickets/{id}` | Get one ticket |
+| PATCH | `/api/v1/tickets/{id}/status` | Change a ticket's status |
+| PATCH | `/api/v1/tickets/{id}/assign` | Assign a ticket to an agent |
+| POST | `/api/v1/tickets/{id}/comments` | Add a comment |
+| GET | `/api/v1/tickets/{id}/comments` | List a ticket's comments |
 
-The ticket and authentication endpoints arrive in the next phases.
+On first start the app seeds three demo users (a requester, an agent and an admin) so the ticket endpoints can be tried out. Authentication and role checks come in Phase 3, so for now requests pass the `requesterId` / `authorId` directly.
+
+Example:
+
+```json
+POST /api/v1/tickets
+{
+  "requesterId": 1,
+  "title": "Laptop will not boot",
+  "description": "Blue screen on startup since this morning",
+  "priority": "HIGH"
+}
+```
 
 ## Running the tests
 
@@ -60,7 +79,7 @@ The ticket and authentication endpoints arrive in the next phases.
 ## Roadmap
 
 - [x] Phase 1 - Foundation: project setup and PostgreSQL connection
-- [ ] Phase 2 - Core APIs: tickets, comments and validation
+- [x] Phase 2 - Core APIs: tickets, comments and validation
 - [ ] Phase 3 - Security: authentication, roles and permissions
 - [ ] Phase 4 - Testing
 - [ ] Phase 5 - Documentation, Postman collection and deployment
