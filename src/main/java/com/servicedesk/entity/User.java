@@ -34,6 +34,13 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    /**
+     * When false the account can no longer log in. Admins deactivate people
+     * who have left instead of deleting them, so their tickets keep an owner.
+     */
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean active = true;
+
     public User() {
         // required by JPA
     }
@@ -83,5 +90,13 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

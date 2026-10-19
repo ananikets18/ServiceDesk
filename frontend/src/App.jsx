@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import TicketListPage from "./pages/TicketListPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import NewTicketPage from "./pages/NewTicketPage";
+import UsersPage from "./pages/UsersPage";
 import { useAuth } from "./AuthContext";
 
 function RequireAuth({ children }) {
@@ -18,6 +19,14 @@ function RequireAuth({ children }) {
 function RequireRequester({ children }) {
   const { user } = useAuth();
   if (user?.role !== "REQUESTER") {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+function RequireAdmin({ children }) {
+  const { user } = useAuth();
+  if (user?.role !== "ADMIN") {
     return <Navigate to="/" replace />;
   }
   return children;
@@ -47,6 +56,14 @@ export default function App() {
           }
         />
         <Route path="tickets/:id" element={<TicketDetailPage />} />
+        <Route
+          path="users"
+          element={
+            <RequireAdmin>
+              <UsersPage />
+            </RequireAdmin>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

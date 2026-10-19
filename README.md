@@ -100,7 +100,11 @@ Protected endpoints expect `Authorization: Bearer <token>`.
 | PATCH | `/api/v1/tickets/{id}/assign` | agent, admin | Assign a ticket |
 | POST | `/api/v1/tickets/{id}/comments` | any role | Add a comment |
 | GET | `/api/v1/tickets/{id}/comments` | any role | List comments |
-| GET | `/api/v1/users/agents` | agent, admin | List agents (for the assign dropdown) |
+| GET | `/api/v1/users/agents` | agent, admin | List active agents (for the assign dropdown) |
+| GET | `/api/v1/users` | admin | List every user |
+| POST | `/api/v1/users` | admin | Create a user with a chosen role |
+| PATCH | `/api/v1/users/{id}/deactivate` | admin | Deactivate an account |
+| PATCH | `/api/v1/users/{id}/activate` | admin | Reactivate an account |
 
 ### Status workflow
 
@@ -110,7 +114,7 @@ A ticket moves through `OPEN -> IN_PROGRESS -> RESOLVED -> CLOSED`, one step at 
 
 - **Requester** - the only role that can raise tickets. Sees only their own, can edit and comment on them while they are open, but cannot change status or assign.
 - **Agent** - works tickets but cannot raise or edit them. Sees all tickets, can move the status of tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
-- **Admin** - oversees everything: can edit, update and assign any ticket, but does not raise tickets either.
+- **Admin** - oversees everything: can edit, update and assign any ticket, and manages the users (create accounts, activate/deactivate them), but does not raise tickets either.
 
 ### Example
 
@@ -145,7 +149,7 @@ Authorization: Bearer <token>
 
 ## Frontend
 
-The React app lives in `frontend/`. It covers login, registration, the ticket list, a new-ticket form and a ticket detail page where agents and admins can change the status, assign an agent and everyone can comment.
+The React app lives in `frontend/`. It covers login, registration, the ticket list, a new-ticket form and a ticket detail page where agents and admins can change the status, assign an agent and everyone can comment. Admins also get a Users page to add accounts and activate or deactivate them.
 
 ### Running the frontend
 
@@ -188,7 +192,7 @@ Import [docs/ServiceDesk.postman_collection.json](docs/ServiceDesk.postman_colle
 .\mvnw.cmd test
 ```
 
-The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 55 tests:
+The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 67 tests:
 
 - `TicketServiceTest` - ticket rules and permissions (mocked repositories).
 - `AuthServiceTest` - registration and login logic.

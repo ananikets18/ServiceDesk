@@ -21,6 +21,7 @@ public class UserPrincipal implements UserDetails {
     private final String email;
     private final String passwordHash;
     private final Role role;
+    private final boolean active;
 
     public UserPrincipal(User user) {
         this.id = user.getId();
@@ -28,6 +29,7 @@ public class UserPrincipal implements UserDetails {
         this.email = user.getEmail();
         this.passwordHash = user.getPasswordHash();
         this.role = user.getRole();
+        this.active = user.isActive();
     }
 
     public Long getId() {
@@ -75,6 +77,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 }

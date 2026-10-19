@@ -46,6 +46,11 @@ export default function Layout() {
               New Ticket
             </NavLink>
           )}
+          {user.role === "ADMIN" && (
+            <NavLink to="/users" className={linkClass}>
+              Users
+            </NavLink>
+          )}
         </nav>
       </header>
 
