@@ -1,74 +1,79 @@
 # ServiceDesk
 
-An IT service request and issue tracking system. Employees raise support tickets and agents pick them up, update them and resolve them. This is my capstone project for practising Java, Spring Boot, REST APIs and PostgreSQL.
+An IT service request and issue tracking system built with Spring Boot. Employees raise support tickets, agents pick them up and resolve them, and admins keep an eye on everything. I built it as my capstone project to practise Java, Spring Boot, REST APIs, PostgreSQL and testing.
+
+## What it does
+
+- **Accounts** - register and log in. Passwords are hashed with BCrypt and sessions are stateless, using JWT tokens.
+- **Tickets** - create, list and view tickets with a priority (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) and a status (`OPEN` -> `IN_PROGRESS` -> `RESOLVED` -> `CLOSED`).
+- **Assignment** - tickets can be assigned to agents.
+- **Comments** - requesters and agents can discuss a ticket.
+- **Roles** - requesters, agents and admins each see and can do different things.
+- **Validation and errors** - every endpoint validates its input and every error comes back in the same JSON shape.
 
 ## Tech stack
 
-- Java 21
-- Spring Boot 3.5 (Spring Web, Spring Data JPA / Hibernate, Spring Security)
-- PostgreSQL
-- JWT (jjwt) for stateless authentication
-- Maven
-- JUnit 5 and Mockito
+| Layer | Choice |
+|---|---|
+| Language | Java 21 |
+| Framework | Spring Boot 3.5 |
+| Web | Spring Web (REST) |
+| Persistence | Spring Data JPA / Hibernate |
+| Database | PostgreSQL |
+| Security | Spring Security + JWT (jjwt) |
+| Validation | Bean Validation |
+| Build | Maven (wrapper included) |
+| Testing | JUnit 5, Mockito, MockMvc, H2 |
+| Docs | springdoc OpenAPI (Swagger UI) |
 
-## Before you start
-
-- JDK 21 installed
-- PostgreSQL running locally
-- No Maven install needed - the repo ships the Maven wrapper
-
-## Getting it running
-
-1. Create the database in PostgreSQL:
-
-   ```sql
-   CREATE DATABASE servicedesk_db;
-   ```
-
-2. Set the two environment variables the app needs. Secrets are kept out of the repo, so the database password comes from `DB_PASSWORD` and the JWT signing key from `JWT_SECRET` (at least 32 characters):
-
-   ```powershell
-   $env:DB_PASSWORD="your-password"
-   $env:JWT_SECRET="a-long-random-string-at-least-32-chars"
-   ```
-
-   To save them permanently instead, run `setx DB_PASSWORD "your-password"` and `setx JWT_SECRET "..."`, then reopen your terminal.
-
-3. If your PostgreSQL username or database name is different, update `src/main/resources/application.properties`.
-
-4. Start the app:
-
-   ```powershell
-   .\mvnw.cmd spring-boot:run
-   ```
-
-   It runs on http://localhost:8080.
-
-## Endpoints
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/` | public | Quick check that the API is up |
-| GET | `/api/v1/health` | public | Health check |
-| POST | `/api/v1/auth/register` | public | Register a new user |
-| POST | `/api/v1/auth/login` | public | Log in and receive a JWT |
-| POST | `/api/v1/tickets` | any role | Create a ticket |
-| GET | `/api/v1/tickets` | any role | List tickets (requesters see only their own) |
-| GET | `/api/v1/tickets/{id}` | any role | Get one ticket |
-| PATCH | `/api/v1/tickets/{id}/status` | agent, admin | Change a ticket's status |
-| PATCH | `/api/v1/tickets/{id}/assign` | agent, admin | Assign a ticket |
-| POST | `/api/v1/tickets/{id}/comments` | any role | Add a comment |
-| GET | `/api/v1/tickets/{id}/comments` | any role | List a ticket's comments |
-
-Protected endpoints expect the token in a header:
+## Project layout
 
 ```
-Authorization: Bearer <token>
+src/main/java/com/servicedesk
+├── config        application setup (demo data, OpenAPI)
+├── controller    HTTP endpoints
+├── dto           request/response objects + validation
+├── entity        User, Ticket, Comment and enums
+├── exception     custom exceptions and the global handler
+├── repository    Spring Data interfaces
+├── security      JWT filter, user details, security config
+└── service       business rules
 ```
+
+## Getting started
+
+You need JDK 21 and PostgreSQL. No Maven install is needed - the repo ships the wrapper.
+
+### 1. Create the database
+
+```sql
+CREATE DATABASE servicedesk_db;
+```
+
+More detail, including creating a dedicated database user, is in [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md).
+
+### 2. Set the environment variables
+
+Secrets are never committed. The app reads them from the environment:
+
+```powershell
+$env:DB_PASSWORD="your-postgres-password"
+$env:JWT_SECRET="a-long-random-string-at-least-32-chars"
+```
+
+To make them permanent, use `setx` and reopen the terminal.
+
+### 3. Run it
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+The API starts on http://localhost:8080. Tables and three demo users are created automatically on first start.
 
 ### Demo accounts
 
-Seeded on first start (password for all three is `password123`):
+All three use the password `password123`.
 
 | Email | Role |
 |---|---|
@@ -76,13 +81,31 @@ Seeded on first start (password for all three is `password123`):
 | `arjun@servicedesk.local` | AGENT |
 | `admin@servicedesk.local` | ADMIN |
 
-### Permissions in short
+## API
+
+Protected endpoints expect `Authorization: Bearer <token>`.
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/` | public | Quick check that the API is up |
+| GET | `/api/v1/health` | public | Health check |
+| POST | `/api/v1/auth/register` | public | Register a user |
+| POST | `/api/v1/auth/login` | public | Log in and receive a JWT |
+| POST | `/api/v1/tickets` | any role | Create a ticket |
+| GET | `/api/v1/tickets` | any role | List tickets (requesters see only their own) |
+| GET | `/api/v1/tickets/{id}` | any role | Get one ticket |
+| PATCH | `/api/v1/tickets/{id}/status` | agent, admin | Change status |
+| PATCH | `/api/v1/tickets/{id}/assign` | agent, admin | Assign a ticket |
+| POST | `/api/v1/tickets/{id}/comments` | any role | Add a comment |
+| GET | `/api/v1/tickets/{id}/comments` | any role | List comments |
+
+### Permissions
 
 - **Requester** - creates tickets, sees only their own, can comment on them, cannot change status or assign.
-- **Agent** - sees all tickets, can change the status of tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
+- **Agent** - sees all tickets, can update tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
 - **Admin** - full access, including assigning any ticket to any agent.
 
-### Example flow
+### Example
 
 ```json
 POST /api/v1/auth/login
@@ -92,6 +115,7 @@ POST /api/v1/auth/login
 ```json
 POST /api/v1/tickets
 Authorization: Bearer <token>
+
 {
   "title": "Laptop will not boot",
   "description": "Blue screen on startup since this morning",
@@ -99,7 +123,7 @@ Authorization: Bearer <token>
 }
 ```
 
-Every error uses the same shape:
+### Error shape
 
 ```json
 {
@@ -112,19 +136,26 @@ Every error uses the same shape:
 }
 ```
 
-## Running the tests
+## Swagger UI
+
+With the app running, open http://localhost:8080/swagger-ui.html. Log in first, then click **Authorize** and paste the token to try requests from the browser.
+
+## Postman
+
+Import [docs/ServiceDesk.postman_collection.json](docs/ServiceDesk.postman_collection.json). The login requests save the token automatically, and the create-ticket request saves the new ticket id, so the requests can be run in order. There is also a folder of negative cases (401, 403, 404, 400) to show the error handling.
+
+## Tests
 
 ```powershell
 .\mvnw.cmd test
 ```
 
-The tests use an in-memory H2 database (see `src/test/resources/application-test.properties`), so you do not need PostgreSQL running to run them. They cover:
+The tests use an in-memory H2 database, so PostgreSQL does not need to be running. There are 39 tests:
 
-- **Unit tests** (`TicketServiceTest`, `AuthServiceTest`) - business rules and permission checks with mocked repositories.
-- **API tests** (`TicketApiTest`) - the real HTTP layer, security filters and database via MockMvc.
-- **Negative cases** - validation errors, 401s, 403s, 404s and duplicate registrations.
-
-Current total: 39 tests.
+- `TicketServiceTest` - ticket rules and permissions (mocked repositories).
+- `AuthServiceTest` - registration and login logic.
+- `TicketApiTest` - full HTTP tests through the security filters and database, including negative cases.
+- `ServiceDeskApplicationTests` - context load check.
 
 ## Roadmap
 
@@ -132,7 +163,7 @@ Current total: 39 tests.
 - [x] Phase 2 - Core APIs: tickets, comments and validation
 - [x] Phase 3 - Security: authentication, roles and permissions
 - [x] Phase 4 - Testing
-- [ ] Phase 5 - Documentation, Postman collection and deployment
+- [x] Phase 5 - Documentation, Postman collection and Swagger
 
 ## Author
 
