@@ -5,8 +5,9 @@ An IT service request and issue tracking system. Employees raise support tickets
 ## Tech stack
 
 - Java 21
-- Spring Boot 3.5 (Spring Web, Spring Data JPA / Hibernate)
+- Spring Boot 3.5 (Spring Web, Spring Data JPA / Hibernate, Spring Security)
 - PostgreSQL
+- JWT (jjwt) for stateless authentication
 - Maven
 - JUnit 5 and Mockito
 
@@ -24,13 +25,14 @@ An IT service request and issue tracking system. Employees raise support tickets
    CREATE DATABASE servicedesk_db;
    ```
 
-2. Set the database password as an environment variable. We keep secrets out of the repo, so the app reads the password from `DB_PASSWORD`:
+2. Set the two environment variables the app needs. Secrets are kept out of the repo, so the database password comes from `DB_PASSWORD` and the JWT signing key from `JWT_SECRET` (at least 32 characters):
 
    ```powershell
    $env:DB_PASSWORD="your-password"
+   $env:JWT_SECRET="a-long-random-string-at-least-32-chars"
    ```
 
-   To save it permanently instead, run `setx DB_PASSWORD "your-password"` and reopen your terminal.
+   To save them permanently instead, run `setx DB_PASSWORD "your-password"` and `setx JWT_SECRET "..."`, then reopen your terminal.
 
 3. If your PostgreSQL username or database name is different, update `src/main/resources/application.properties`.
 
@@ -44,29 +46,69 @@ An IT service request and issue tracking system. Employees raise support tickets
 
 ## Endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/` | Quick check that the API is up |
-| GET | `/api/v1/health` | Health check |
-| POST | `/api/v1/tickets` | Create a ticket |
-| GET | `/api/v1/tickets` | List all tickets |
-| GET | `/api/v1/tickets/{id}` | Get one ticket |
-| PATCH | `/api/v1/tickets/{id}/status` | Change a ticket's status |
-| PATCH | `/api/v1/tickets/{id}/assign` | Assign a ticket to an agent |
-| POST | `/api/v1/tickets/{id}/comments` | Add a comment |
-| GET | `/api/v1/tickets/{id}/comments` | List a ticket's comments |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/` | public | Quick check that the API is up |
+| GET | `/api/v1/health` | public | Health check |
+| POST | `/api/v1/auth/register` | public | Register a new user |
+| POST | `/api/v1/auth/login` | public | Log in and receive a JWT |
+| POST | `/api/v1/tickets` | any role | Create a ticket |
+| GET | `/api/v1/tickets` | any role | List tickets (requesters see only their own) |
+| GET | `/api/v1/tickets/{id}` | any role | Get one ticket |
+| PATCH | `/api/v1/tickets/{id}/status` | agent, admin | Change a ticket's status |
+| PATCH | `/api/v1/tickets/{id}/assign` | agent, admin | Assign a ticket |
+| POST | `/api/v1/tickets/{id}/comments` | any role | Add a comment |
+| GET | `/api/v1/tickets/{id}/comments` | any role | List a ticket's comments |
 
-On first start the app seeds three demo users (a requester, an agent and an admin) so the ticket endpoints can be tried out. Authentication and role checks come in Phase 3, so for now requests pass the `requesterId` / `authorId` directly.
+Protected endpoints expect the token in a header:
 
-Example:
+```
+Authorization: Bearer <token>
+```
+
+### Demo accounts
+
+Seeded on first start (password for all three is `password123`):
+
+| Email | Role |
+|---|---|
+| `riya@servicedesk.local` | REQUESTER |
+| `arjun@servicedesk.local` | AGENT |
+| `admin@servicedesk.local` | ADMIN |
+
+### Permissions in short
+
+- **Requester** - creates tickets, sees only their own, can comment on them, cannot change status or assign.
+- **Agent** - sees all tickets, can change the status of tickets assigned to them (or still unassigned), and can only assign tickets to themselves.
+- **Admin** - full access, including assigning any ticket to any agent.
+
+### Example flow
+
+```json
+POST /api/v1/auth/login
+{ "email": "riya@servicedesk.local", "password": "password123" }
+```
 
 ```json
 POST /api/v1/tickets
+Authorization: Bearer <token>
 {
-  "requesterId": 1,
   "title": "Laptop will not boot",
   "description": "Blue screen on startup since this morning",
   "priority": "HIGH"
+}
+```
+
+Every error uses the same shape:
+
+```json
+{
+  "timestamp": "2026-10-19T11:22:09",
+  "status": 400,
+  "error": "Validation Failed",
+  "message": "One or more fields are invalid",
+  "path": "/api/v1/tickets",
+  "fieldErrors": { "title": "title must not be blank" }
 }
 ```
 
@@ -80,7 +122,7 @@ POST /api/v1/tickets
 
 - [x] Phase 1 - Foundation: project setup and PostgreSQL connection
 - [x] Phase 2 - Core APIs: tickets, comments and validation
-- [ ] Phase 3 - Security: authentication, roles and permissions
+- [x] Phase 3 - Security: authentication, roles and permissions
 - [ ] Phase 4 - Testing
 - [ ] Phase 5 - Documentation, Postman collection and deployment
 
