@@ -1,0 +1,110 @@
+# ServiceDesk — Project Blueprint
+
+## 1. Project Overview
+
+**ServiceDesk** is a web-based IT Service Request and Issue Tracking System that allows employees to report technical issues while support agents manage, assign, and resolve them.
+
+**Objective:** Demonstrate Java programming, OOP, backend development, REST APIs, database management, security, and software testing in one practical project.
+
+## 2. Target Users
+
+- **Requester:** Creates tickets and tracks their progress.
+- **Support Agent:** Views assigned tickets, updates statuses, and adds comments.
+- **Admin:** Manages users and oversees all tickets.
+
+## 3. Core Features (MVP)
+
+1. **Authentication:** User registration/login and secure password hashing.
+2. **Ticket Management:** Create, view, update, and track support tickets.
+3. **Ticket Assignment:** Assign tickets to support agents.
+4. **Status Management:** Open → In Progress → Resolved → Closed.
+5. **Priority Management:** Low, Medium, High, Critical.
+6. **Comments:** Allow requesters and agents to discuss issues.
+7. **Role-Based Access:** Restrict actions according to the user's role and permissions.
+8. **Validation & Error Handling:** Validate inputs and return consistent API errors.
+9. **Testing:** Automated tests for business logic, API behavior, permissions, and validation.
+
+## 4. Technology Stack
+
+- **Language:** Java 21
+- **Framework:** Spring Boot
+- **API:** Spring Web, REST APIs
+- **Database:** PostgreSQL
+- **ORM:** Spring Data JPA / Hibernate
+- **Security:** Spring Security
+- **Build Tool:** Maven
+- **Testing:** JUnit 5, Mockito, Spring Boot Test
+- **API Testing:** Postman
+- **Version Control:** Git and GitHub
+
+**Optional after the core app works:** Swagger/OpenAPI, Docker, and GitHub Actions.
+
+## 5. Main Database Entities
+
+| Entity | Important Fields |
+|---|---|
+| User | ID, name, email, password hash, role |
+| Ticket | ID, title, description, priority, status, requester, assignee, timestamps |
+| Comment | ID, ticket ID, author ID, message, created timestamp |
+
+Use relationships and foreign keys to maintain data integrity.
+
+## 6. Key REST API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/auth/register` | Register a user |
+| POST | `/api/v1/auth/login` | Authenticate a user |
+| POST | `/api/v1/tickets` | Create a ticket |
+| GET | `/api/v1/tickets` | List accessible tickets |
+| GET | `/api/v1/tickets/{id}` | View ticket details |
+| PATCH | `/api/v1/tickets/{id}/status` | Update ticket status |
+| PATCH | `/api/v1/tickets/{id}/assign` | Assign a support agent |
+| POST | `/api/v1/tickets/{id}/comments` | Add a comment |
+
+Enforce authorization on the server; knowing a ticket ID must not grant access to someone else's ticket.
+
+## 7. Basic Architecture
+
+**Client / Postman → Controller → Service → Repository → PostgreSQL**
+
+- **Controller:** Receives HTTP requests and returns responses.
+- **Service:** Contains business rules and workflow logic.
+- **Repository:** Handles database operations.
+- **DTOs & Validation:** Control request and response data.
+- **Security:** Protects endpoints and enforces role permissions.
+- **Exception Handler:** Returns consistent error responses.
+
+## 8. Definition of Done
+
+The project is complete when:
+
+- Users can authenticate and perform actions allowed by their roles.
+- Tickets can be created, assigned, updated, and commented on.
+- Invalid inputs produce meaningful errors.
+- Unauthorized users cannot access restricted tickets or operations.
+- Data persists correctly in PostgreSQL.
+- Automated tests cover key success and failure scenarios.
+- The repository includes a README, database setup instructions, API documentation or examples, and test instructions.
+
+## 9. Suggested Development Plan
+
+**Phase 1 — Foundation:** Java/OOP revision, Spring Boot project setup, PostgreSQL connection.
+
+**Phase 2 — Core APIs:** Entities, repositories, services, ticket CRUD, validation.
+
+**Phase 3 — Security:** Authentication, roles, ownership checks, assignment permissions.
+
+**Phase 4 — Testing:** Unit tests, API/integration tests, negative test cases, bug fixes.
+
+**Phase 5 — Finalization:** README, Postman collection, GitHub repository, and optional deployment/CI.
+
+Estimated duration: **10–14 days at 3–4 focused hours per day**, depending on your existing Spring Boot knowledge.
+
+## 10. Out of Scope
+
+Keep the first version manageable. No microservices, Kubernetes, Kafka, AI/ML, payment systems, or complex cloud architecture. A separate frontend is optional; begin with the backend and test it through Postman.
+
+## Expected Outcome
+
+A single, well-tested Java backend project demonstrating practical software development and QA fundamentals, supported by a clean GitHub repository and clear documentation.
