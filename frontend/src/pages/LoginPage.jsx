@@ -48,7 +48,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              placeholder="riya@servicedesk.local"
+              placeholder="you@example.com"
             />
           </div>
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              placeholder="password123"
+              placeholder="••••••••"
             />
           </div>
 
@@ -80,12 +80,6 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        <div className="mt-6 rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-          <p className="font-medium">Demo accounts (password123)</p>
-          <p>riya@servicedesk.local · requester</p>
-          <p>arjun@servicedesk.local · agent</p>
-          <p>admin@servicedesk.local · admin</p>
-        </div>
       </div>
     </div>
   );
