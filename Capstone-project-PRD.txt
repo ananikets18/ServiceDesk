@@ -29,7 +29,7 @@
 - **Language:** Java 21
 - **Framework:** Spring Boot
 - **API:** Spring Web, REST APIs
-- **Database:** PostgreSQL
+- **Database:** MySQL 8
 - **ORM:** Spring Data JPA / Hibernate
 - **Security:** Spring Security
 - **Build Tool:** Maven
@@ -37,7 +37,7 @@
 - **API Testing:** Postman
 - **Version Control:** Git and GitHub
 
-**Optional after the core app works:** Swagger/OpenAPI, Docker, and GitHub Actions.
+**Optional after the core app works:** Swagger/OpenAPI and GitHub Actions.
 
 ## 5. Main Database Entities
 
@@ -66,7 +66,7 @@ Enforce authorization on the server; knowing a ticket ID must not grant access t
 
 ## 7. Basic Architecture
 
-**Client / Postman → Controller → Service → Repository → PostgreSQL**
+**Client / Postman → Controller → Service → Repository → MySQL**
 
 - **Controller:** Receives HTTP requests and returns responses.
 - **Service:** Contains business rules and workflow logic.
@@ -83,13 +83,13 @@ The project is complete when:
 - Tickets can be created, assigned, updated, and commented on.
 - Invalid inputs produce meaningful errors.
 - Unauthorized users cannot access restricted tickets or operations.
-- Data persists correctly in PostgreSQL.
+- Data persists correctly in MySQL.
 - Automated tests cover key success and failure scenarios.
 - The repository includes a README, database setup instructions, API documentation or examples, and test instructions.
 
 ## 9. Suggested Development Plan
 
-**Phase 1 — Foundation:** Java/OOP revision, Spring Boot project setup, PostgreSQL connection.
+**Phase 1 — Foundation:** Java/OOP revision, Spring Boot project setup, MySQL connection.
 
 **Phase 2 — Core APIs:** Entities, repositories, services, ticket CRUD, validation.
 

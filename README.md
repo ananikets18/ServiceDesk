@@ -1,6 +1,6 @@
 # ServiceDesk
 
-An IT service request and issue tracking system built with Spring Boot. Employees raise support tickets, agents pick them up and resolve them, and admins keep an eye on everything. I built it as my capstone project to practise Java, Spring Boot, REST APIs, PostgreSQL and testing.
+An IT service request and issue tracking system built with Spring Boot. Employees raise support tickets, agents pick them up and resolve them, and admins keep an eye on everything. I built it as my capstone project to practise Java, Spring Boot, REST APIs, MySQL and testing.
 
 ## What it does
 
@@ -19,7 +19,7 @@ An IT service request and issue tracking system built with Spring Boot. Employee
 | Framework | Spring Boot 3.5 |
 | Web | Spring Web (REST) |
 | Persistence | Spring Data JPA / Hibernate |
-| Database | PostgreSQL |
+| Database | MySQL |
 | Security | Spring Security + JWT (jjwt) |
 | Validation | Bean Validation |
 | Build | Maven (wrapper included) |

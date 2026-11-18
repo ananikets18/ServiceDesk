@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * API tests that go through the real HTTP layer, security filters and database.
- * The test profile swaps PostgreSQL for an in-memory H2 database.
+ * The test profile swaps MySQL for an in-memory H2 database.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

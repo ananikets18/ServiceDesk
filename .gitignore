@@ -15,3 +15,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local database credentials and application secrets
+.env
+.env.local

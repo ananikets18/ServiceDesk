@@ -67,10 +67,10 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PostgreSQL JDBC driver -->
+        <!-- MySQL JDBC driver (version managed by Spring Boot) -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -81,7 +81,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- In-memory database used only by the tests, so they do not need PostgreSQL -->
+        <!-- In-memory database used by the default tests, so they do not need MySQL -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

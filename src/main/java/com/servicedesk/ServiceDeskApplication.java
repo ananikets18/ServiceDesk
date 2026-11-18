@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * Main entry point of the ServiceDesk application.
  *
- * Running this class starts the embedded server, connects to PostgreSQL
+ * Running this class starts the embedded server, connects to MySQL
  * and makes all of our REST endpoints available.
  */
 @SpringBootApplication

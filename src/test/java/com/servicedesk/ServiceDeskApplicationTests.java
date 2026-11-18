@@ -6,8 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Basic test that makes sure the Spring context loads correctly.
- * It needs a running PostgreSQL database (see application.properties).
- * The "test" profile supplies a fixed JWT secret.
+ * The "test" profile supplies an in-memory H2 database and a fixed JWT secret.
  */
 @SpringBootTest
 @ActiveProfiles("test")
